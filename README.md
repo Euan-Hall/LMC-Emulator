@@ -1,7 +1,7 @@
 # LMC-Emulator
 LMC (Little man computer) Emulator written in python
 
-##Completed: 
+## Completed: 
 * - Added all the avialable commands
 * - Able to run instructions in the GUI
 
