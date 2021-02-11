@@ -14,3 +14,4 @@ LMC (Little man computer) Emulator written in python
 * - Add widgets for PC, ACC, IR and AD (same frame?)
 * - Error handling
 * - Optimize performance (damn after...)
+* - Add a fix for break points
