@@ -26,18 +26,27 @@ class LMC:
         # Creating UI
         # Creating textbox/scrollbar
         self.root = tk.Tk()
-        self.root.geometry("925x800")
         self.root.resizable(height=None, width=None)
+
+        self.menu = tk.Menu(self.root)
+        self.root.config(menu=self.menu)
+
+        self.fileMenu = tk.Menu(self.menu, tearoff=False)
+        self.fileMenu.add_command(label="Open")
+        self.fileMenu.add_command(label="Save")
+        self.fileMenu.add_command(label="Exit", command=lambda:self.root.destroy())
+        self.menu.add_cascade(menu=self.fileMenu, label="File")
 
         self.inst_frame = tk.Frame(self.root)
         self.sb = tk.Scrollbar(self.inst_frame)
         self.text_box = tk.Text(self.inst_frame)
+
         self.sb.config(command=self.text_box.yview)
         self.text_box.config(yscrollcommand=self.sb.set)
         self.sb.grid(row=0, column=1)
         self.text_box.grid(row=0, column=0, sticky='ns')
         self.text_box.insert(tk.END, "Enter your instructions here:")
-        self.inst_frame.grid(row=0, column=0, sticky="nsew")
+        self.inst_frame.grid(row=0, column=0, sticky="nesw")
 
         # Creating RUN, STOP and log
         self.rsl_frame = tk.Frame(self.root)
