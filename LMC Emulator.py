@@ -26,6 +26,8 @@ class LMC:
         # Creating UI
         # Creating textbox/scrollbar
         self.root = tk.Tk()
+        self.root.geometry("925x800")
+        self.root.resizable(height=None, width=None)
 
         self.inst_frame = tk.Frame(self.root)
         self.sb = tk.Scrollbar(self.inst_frame)
@@ -35,7 +37,7 @@ class LMC:
         self.sb.grid(row=0, column=1)
         self.text_box.grid(row=0, column=0, sticky='ns')
         self.text_box.insert(tk.END, "Enter your instructions here:")
-        self.inst_frame.grid(row=0, column=0)
+        self.inst_frame.grid(row=0, column=0, sticky="nsew")
 
         # Creating RUN, STOP and log
         self.rsl_frame = tk.Frame(self.root)
@@ -61,15 +63,43 @@ class LMC:
         self.entryB.grid(row=0, column=3)
         self.button_frame.grid(row=2, column=0)
 
+        # Creating the labels for ACC, PC, AD AND IR
+        self.CPU_frame = tk.Frame(self.root)
+        self.ACCL = tk.Label(self.CPU_frame, text="Accumulator: ")
+        self.PCL = tk.Label(self.CPU_frame, text="Program Counter: ")
+        self.ADL = tk.Label(self.CPU_frame, text="Address Register: ")
+        self.IRL = tk.Label(self.CPU_frame, text="Instruction Register: ")
+        self.ACCL.grid(row=0, column=0)
+        self.PCL.grid(row=1, column=0)
+        self.IRL.grid(row=2, column=0)
+        self.ADL.grid(row=2, column=1)
+        self.CPU_frame.grid(row=0, column=1)
+
+        # Creating labels for memory
+        self.memory_labels = []
+        self.memory_frame = tk.Frame(self.root)
+        r = 0
+        c = 0
+        for i in range(0, 100):
+            self.memory_labels.append(tk.Label(self.memory_frame, text="000"))
+            self.memory_labels[i].grid(row=r, column=c)
+            c += 1
+            if (i+1) % 10 == 0:
+                r += 1
+                c = 0
+        self.memory_frame.grid(row=1, column=1)
         self.root.mainloop()
+
     def done_wait(self):
         temp = self.entryB.get()
         print(temp)
         self.var.set(temp)
+
     def compile(self):
         # Converting instructions and placing them in memory
         # Finding any commands with DAT
         instructions = self.text_box.get("1.0", "end-1c").split("\n")
+        print(instructions)
         x = 0
         for item in instructions:
             if len(item) > 3:
@@ -95,6 +125,7 @@ class LMC:
             else:
                 inst = self.COMMANDS[item[1]]
             self.MEMORY[item[0]] = inst
+            self.memory_labels[item[0]]["text"] = inst
         self.log.config(state="normal")
         self.log.insert(tk.END, f"\nTranslated instructions: {instructions}")
         self.log.config(state="disabled")
@@ -107,6 +138,9 @@ class LMC:
         self.IR = int(self.MEMORY[self.PC][0])
         self.AD = int(self.MEMORY[self.PC][1:])
         self.PC += 1
+        self.IRL["text"] = f"Instruction Register: {self.IR}"
+        self.ADL["text"] = f"Address Register: {self.AD}"
+        self.PCL["text"] = f"Program Counter: {self.PC}"
 
         # Decode/Execute
         self.log.config(state="normal")
@@ -114,29 +148,36 @@ class LMC:
         self.log.config(state="disabled")
         if self.IR == 0:
             self.PC = -1
+            self.log.config(state="normal")
+            self.log.insert(tk.END, "\n~~~ END OF LOG ~~~")
+            self.log.config(state="disabled")
         elif self.IR == 1:
             self.log.config(state="normal")
             self.log.insert(tk.END, "\nAdding to ACC...")
             self.log.config(state="disabled")
             self.ACC += self.MEMORY[self.AD]
+            self.ACCL["text"] = f"Accumulator: {self.ACC}"
 
         elif self.IR == 2:
             self.log.config(state="normal")
             self.log.insert(tk.END, "\nTaking away from ACC...")
             self.log.config(state="disabled")
             self.ACC -= self.MEMORY[self.AD]
+            self.ACCL["text"] = f"Accumulator: {self.ACC}"
 
         elif self.IR == 3:
             self.log.config(state="normal")
             self.log.insert(tk.END, f"\nSetting Memory location {self.AD} equal to ACC...")
             self.log.config(state="disabled")
             self.MEMORY[self.AD] = self.ACC
+            self.memory_labels[self.AD]["text"] = self.ACC
 
         elif self.IR == 5:
             self.log.config(state="normal")
             self.log.insert(tk.END, f"\nSetting ACC equal to Memory location {self.AD}...")
             self.log.config(state="disabled")
             self.ACC = self.MEMORY[self.AD]
+            self.ACCL["text"] = f"Accumulator: {self.ACC}"
 
         elif self.IR == 6:
             self.log.config(state="normal")
@@ -162,13 +203,14 @@ class LMC:
                 self.log.config(state="disabled")
                 self.submit.wait_variable(self.var)
                 self.ACC = self.var.get()
+                self.ACCL["text"] = f"Accumulator: {self.ACC}"
             else:
                 self.log.config(state="normal")
                 self.log.insert(tk.END, "\nDisplaying the value of ACC...")
                 self.log.insert(tk.END, f"\nValue of ACC: {self.ACC}")
                 self.log.config(state="disabled")
         if self.PC != -1:
-            self.root.after(2000, self.run_instructions)
+            self.root.after(100, self.run_instructions)
 
 
 instruction = """INP
